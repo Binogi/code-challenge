@@ -14,18 +14,16 @@ class SearchController extends Controller
     {
       // Get access token from Spotify
         if (!Cache::has('accessToken')) {
-            // Create the Spotify Client
+            // Create Spotify Client
             $this->spotifyClient = new SpotifyWebAPI\Session(
                 '3a52d9ecb7ed47f3a37c664169059b87',
                 'd965454609944a80ad9ad7768fea534b'
             );
             // Attempt to get client_credentials token
             if ($this->spotifyClient->requestCredentialsToken()) {
-                $tokenExpiryMinutes = floor(($this->spotifyClient->getTokenExpiration() - time()) / 60);
                 Cache::put(
                     'accessToken',
-                    $this->spotifyClient->getAccessToken(),
-                    $tokenExpiryMinutes
+                    $this->spotifyClient->getAccessToken()
                 );
             }
         }
@@ -90,14 +88,14 @@ class SearchController extends Controller
         //Get query data
         $query=$request->get('query');
 
-        //Search term
+        //Store Search term
         $data['searchTerm']=$query;
 
         //New connection to Spotify API
         $api = new SpotifyWebAPI\SpotifyWebAPI();
         $api->setAccessToken(Cache::get('accessToken'));
 
-        //Search for artists
+        //Search the spotify catalog for artists
         $artist = $api->search($query, 'artist');
 
         //Store artist item object
@@ -107,7 +105,7 @@ class SearchController extends Controller
         $data['artist_pics']=$this->getSmallestImage($artist->artists->items);
 
         //
-        //Search for albums
+        //Search the spotify catalog for albums
         //
         $album = $api->search($query, 'album');
 
@@ -118,7 +116,7 @@ class SearchController extends Controller
         $data['album_pics']=$this->getSmallestImage($album->albums->items);
 
         //
-        //Search for tracks
+        //Search the spotify catalog for tracks
         //
         $track = $api->search($query, 'track');
 
@@ -130,6 +128,7 @@ class SearchController extends Controller
     }
 
     private function getSmallestImage($images){
+      //Arrays used
       $pics=[];
       //Iterate trough the object
       foreach ($images as $key => $value){
@@ -141,7 +140,7 @@ class SearchController extends Controller
         //If no images are available, set some empty data
         else $pics[]=(object)array('height'=>0,'url'=>'#','width'=>0);
       }
-      //Return array of small images
+      //Return array of small images from spotify
       return $pics;
     }
 

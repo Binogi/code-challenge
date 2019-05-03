@@ -40,8 +40,6 @@
 <body>
 
 <div class="content">
-  <form method="post" action="/info">
-      {{csrf_field()}}
     <div>
         Your Search Term Was: <b>{{$searchTerm}}</b>
     </div>
@@ -80,7 +78,6 @@
       @endforeach
     </table>
     </div>
-    </form>
 </div>
 </body>
 </html>
