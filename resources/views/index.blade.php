@@ -39,9 +39,10 @@
         <label for="search-box"><img alt="logo" src="/img/logo.svg" class="img" /></label>
     </div>
     <div class="search">
-        <form method="post" action="/search">
+        <form method="post" action="{{ route('search') }}">
             {{csrf_field()}}
             <input id="search-box" name="query" type="text" placeholder="search term" />
+            <small class="text-danger">{{ $errors->first('query') }}</small>
             <button type="submit">Search for Artists</button>
 
         </form>

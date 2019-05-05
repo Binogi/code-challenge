@@ -86,8 +86,19 @@ class SearchController extends Controller
         $data=[];
 
         //Get query data
-        $query=$request->get('query');
+        $query=$request->input('query');
 
+        //Validate form
+        if( $request->isMethod('post') )
+        {
+          $this->validate(
+            $request,
+            [
+              'query'=>'required|min:3',
+            ]
+          );
+        //If validated
+        
         //Store Search term
         $data['searchTerm']=$query;
 
@@ -125,6 +136,9 @@ class SearchController extends Controller
 
         //return view('search', ['searchTerm' => $query]);
         return view('search', $data);
+      }
+      //Else return to
+        return view('index');
     }
 
     private function getSmallestImage($images){
