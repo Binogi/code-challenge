@@ -3,46 +3,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\Spotify;
 use Cache;
-use Session;
 use SpotifyWebAPI;
 
 class SearchController extends Controller
 {
-
-  public function __construct()
-    {
-      // Get access token from Spotify
-        if (!Cache::has('accessToken')) {
-            // Create Spotify Client
-            $this->spotifyClient = new SpotifyWebAPI\Session(
-                '3a52d9ecb7ed47f3a37c664169059b87',
-                'd965454609944a80ad9ad7768fea534b'
-            );
-            // Attempt to get client_credentials token
-            if ($this->spotifyClient->requestCredentialsToken()) {
-                Cache::put(
-                    'accessToken',
-                    $this->spotifyClient->getAccessToken()
-                );
-            }
-        }
-
-    }
 
     public function index()
     {
         return view('index');
     }
 
-    public function showartist($id, Request $request)
+    public function showartist($id, Request $request, Spotify $spotify)
     {
-      //New connection to Spotify API
-      $api = new SpotifyWebAPI\SpotifyWebAPI();
-      $api->setAccessToken(Cache::get('accessToken'));
 
       //Get Artist object with artist id
-      $artist[]=$api->getArtist($id);
+      $artist[]=$spotify->getArtist($id);
 
       //Store artist object
       $artist['artist']=$artist;
@@ -50,14 +27,10 @@ class SearchController extends Controller
       return view('info_artist', $artist);
     }
 
-    public function showalbum($id, Request $request)
+    public function showalbum($id, Request $request, Spotify $spotify)
     {
-      //New connection to Spotify API
-      $api = new SpotifyWebAPI\SpotifyWebAPI();
-      $api->setAccessToken(Cache::get('accessToken'));
-
       //Get Album object with album id
-      $album_tracks[]=$api->getAlbum($id);
+      $album_tracks[]=$spotify->getAlbum($id);
 
       //Store album object
       $album['album']=$album_tracks;
@@ -65,14 +38,10 @@ class SearchController extends Controller
       return view('info_album', $album);
     }
 
-    public function showtrack($id, Request $request)
+    public function showtrack($id, Request $request, Spotify $spotify)
     {
-      //New connection to Spotify API
-      $api = new SpotifyWebAPI\SpotifyWebAPI();
-      $api->setAccessToken(Cache::get('accessToken'));
-
       //Get Track object with track id
-      $tracks[]=$api->getTrack($id);
+      $tracks[]=$spotify->getTrack($id);
 
       //Store track object
       $track['track']=$tracks;
@@ -80,7 +49,7 @@ class SearchController extends Controller
       return view('info_track', $track);
     }
 
-    public function search(Request $request)
+    public function search(Request $request, Spotify $spotify)
     {
         //Arrays used
         $data=[];
@@ -89,25 +58,20 @@ class SearchController extends Controller
         $query=$request->input('query');
 
         //Validate form
-        if( $request->isMethod('post') )
-        {
-          $this->validate(
+        if( $request->isMethod('post') ) {
+            $this->validate(
             $request,
             [
-              'query'=>'required|min:3',
+            'query'=>'required|min:1',
             ]
-          );
-        //If validated
-        
+            );
+        //If validated continue search
+
         //Store Search term
         $data['searchTerm']=$query;
 
-        //New connection to Spotify API
-        $api = new SpotifyWebAPI\SpotifyWebAPI();
-        $api->setAccessToken(Cache::get('accessToken'));
-
         //Search the spotify catalog for artists
-        $artist = $api->search($query, 'artist');
+        $artist = $spotify->searchArtist($query);
 
         //Store artist item object
         $data['artist_results']=$artist->artists->items;
@@ -118,7 +82,7 @@ class SearchController extends Controller
         //
         //Search the spotify catalog for albums
         //
-        $album = $api->search($query, 'album');
+        $album = $spotify->searchAlbum($query);
 
         //Store album item object
         $data['album_results']=$album->albums->items;
@@ -129,7 +93,7 @@ class SearchController extends Controller
         //
         //Search the spotify catalog for tracks
         //
-        $track = $api->search($query, 'track');
+        $track = $spotify->searchTrack($query);
 
         //Store track item object
         $data['track_results']=$track->tracks->items;
@@ -137,7 +101,7 @@ class SearchController extends Controller
         //return view('search', ['searchTerm' => $query]);
         return view('search', $data);
       }
-      //Else return to
+      //Else return to index
         return view('index');
     }
 
