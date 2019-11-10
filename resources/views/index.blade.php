@@ -39,13 +39,12 @@
         <label for="search-box"><img alt="logo" src="/img/logo.svg" class="img" /></label>
     </div>
     <div class="search">
-        <form method="post" action="/search">
+        <form method="get" action="/search">
             {{csrf_field()}}
             <input id="search-box" name="query" type="text" placeholder="search term" />
             <button type="submit">Search for Artists</button>
-
         </form>
     </div>
-</div>
+    </div>   
 </body>
 </html>
