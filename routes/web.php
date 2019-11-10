@@ -12,4 +12,6 @@
 */
 
 Route::get('/', "SearchController@index");
-Route::post('/search', "SearchController@search");
+Route::get('/search', "SearchController@searchAll");
+Route::get('/search/findartists', "SearchController@findartists");
+Route::get('/search/artist/{artist_id}', 'SearchController@artist');
